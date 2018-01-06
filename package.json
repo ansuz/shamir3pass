@@ -11,8 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "ansuz": "0.0.18",
-    "bignum": "^0.12.5",
     "jsbn": "^1.1.0",
+    "tweetnacl": "^1.0.0",
     "tweetnacl-util": "^0.15.0"
   }
 }

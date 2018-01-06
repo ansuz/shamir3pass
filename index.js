@@ -1,41 +1,28 @@
 var jsbn = require("jsbn");
 var bigint = jsbn.BigInteger;
-var bignum = require("bignum");
 var util = require("tweetnacl-util");
+var prime = require("./prime");
 
 var L = module.exports;
 
-var randomProbablePrime = function (bits) {
-    return bignum.prime(bits);
-};
-
-var randomPrime = L.randomPrime = function (bits) {
-    var p = randomProbablePrime(bits);
-    while (p.probPrime() !== true) { p = randomProbablePrime(bits); }
-    return new bigint(p.toString());
-};
-
-var generateKeyFromPrime = L.generateKeyFromPrime = function (prime) {
+var randomPrime = L.randomPrime = prime;
+var generateKeyFromPrime = L.generateKeyFromPrime = function (bits, prime, cb) {
     var n;
     var primeMinusOne = prime.subtract(bigint.ONE);
-
     var gcd;
-    while (true) {
-        n = randomPrime(1024);
-        gcd = primeMinusOne.gcd(n);
-        if (!gcd.equals(bigint.ZERO)) {
-            return {
+    var again = function () {
+        randomPrime(bits, function (e, p) {
+            n = p;
+            gcd = primeMinusOne.gcd(n);
+            if (gcd.equals(bigint.ZERO)) { return void again(); }
+            cb(null, {
                 Encryption: n,
                 Decryption: n.modInverse(primeMinusOne),
                 Prime: prime,
-            };
-        }
-    }
-};
-
-L.genkey = function () {
-    var prime = randomPrime(1024);
-    return generateKeyFromPrime(prime);
+            });
+        });
+    };
+    again();
 };
 
 L.encrypt = function (m, key) {
@@ -48,7 +35,12 @@ L.decrypt = function (c, key) {
 
 L.stringToBigInt = function (s) {
     var bytes = util.decodeUTF8(s);
-    return new bigint(bignum.fromBuffer(bytes).toString());
+    var num = bigint.ZERO;
+    var l = bytes.length;
+    for (var i = 0;i < l; i++) {
+        num = num.shiftLeft(8).add(new bigint(Number(bytes[i]).toString()));
+    }
+    return num;
 };
 
 L.bigIntToString = function (bi) {
