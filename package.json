@@ -1,0 +1,18 @@
+{
+  "name": "shamir3pass",
+  "version": "1.0.0",
+  "description": "shamir3pass",
+  "main": "index.js",
+  "scripts": {
+    "lint": "jshint --config .jshintrc --exclude-path .jshintignore .",
+    "test": "node ./test.js"
+  },
+  "author": "ansuz",
+  "license": "ISC",
+  "dependencies": {
+    "ansuz": "0.0.18",
+    "bignum": "^0.12.5",
+    "jsbn": "^1.1.0",
+    "tweetnacl-util": "^0.15.0"
+  }
+}
