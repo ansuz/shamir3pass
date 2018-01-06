@@ -17,7 +17,6 @@ var randomPrime = L.randomPrime = function (bits) {
 
 var generateKeyFromPrime = L.generateKeyFromPrime = function (prime) {
     var n;
-    var mi;
     var primeMinusOne = prime.subtract(bigint.ONE);
 
     var gcd;
@@ -25,10 +24,9 @@ var generateKeyFromPrime = L.generateKeyFromPrime = function (prime) {
         n = randomPrime(1024);
         gcd = primeMinusOne.gcd(n);
         if (!gcd.equals(bigint.ZERO)) {
-            mi = n.modInverse(primeMinusOne);
             return {
                 Encryption: n,
-                Decryption: mi,
+                Decryption: n.modInverse(primeMinusOne),
                 Prime: prime,
             };
         }

@@ -19,9 +19,12 @@ Encrypt a plaintext in with as many keys as you like, and decrypt the resulting 
 ## Caveats
 
 * cyphertexts are not padded
-* you cannot encrpyt the empty string
+* you cannot encrypt the empty string
 * messages cannot be larger than 1024 bytes
 * messages are not authenticated at all
 * key generation is very slow
 * two bignum libraries are used because neither one on its own had all the methods that were required
 
+## To do
+
+See [todo.md](./todo.md)
