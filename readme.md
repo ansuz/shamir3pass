@@ -14,7 +14,7 @@ Additionally, it is a work in progress, and I make no guarantees that its API wi
 
 ---
 
-Implements commutative encryption.
+Implements commutative encryption suitable for [implementing a three-pass-protocol](https://en.wikipedia.org/wiki/Three-pass_protocol).
 
 Encrypt a plaintext in with as many keys as you like, and decrypt the resulting cyphertext an any order to reveal the same result.
 
@@ -151,4 +151,6 @@ Carol thinks of a solution:
 6. They take turns choosing one of the cyphertexts, and having the others decrypt the value with their keys until the bunk is revealed
 
 In the end, they all have a bunk, and did not have to trust any one person's random number generator.
+
+This is one way to implement [shuffling cards using commutative encryption](https://en.wikipedia.org/wiki/Mental_poker#Shuffling_cards_using_commutative_encryption).
 

@@ -1,8 +1,12 @@
 {
   "name": "shamir3pass",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "shamir3pass",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ansuz/shamir3pass"
+  },
   "scripts": {
     "lint": "jshint --config .jshintrc --exclude-path .jshintignore .",
     "test": "node ./test.js"
