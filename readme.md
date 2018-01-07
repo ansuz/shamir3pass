@@ -10,6 +10,8 @@ This library has not been audited or validated in any way by anyone with experie
 
 You definitely should not depend on this library for handling sensitive information.
 
+Additionally, it is a work in progress, and I make no guarantees that its API will remain stable.
+
 ---
 
 Implements commutative encryption.
@@ -18,12 +20,12 @@ Encrypt a plaintext in with as many keys as you like, and decrypt the resulting 
 
 ## Caveats
 
-* cyphertexts are not padded
 * you cannot encrypt the empty string
-* messages cannot be larger than 1024 bytes
+* messages must not be larger than the size of the shared prime
 * messages are not authenticated at all
 * key generation is very slow
-* two bignum libraries are used because neither one on its own had all the methods that were required
+* cyphertexts are encoded as jsbn big integers, rather than the usual Uint8Arrays
+  * methods are provided for converting to a variety of formats
 
 ## Usage
 

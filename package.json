@@ -9,8 +9,10 @@
   },
   "author": "ansuz",
   "license": "ISC",
+  "devDependencies": {
+    "ansuz": "0.0.18"
+  },
   "dependencies": {
-    "ansuz": "0.0.18",
     "jsbn": "^1.1.0",
     "tweetnacl": "^1.0.0",
     "tweetnacl-util": "^0.15.0"
