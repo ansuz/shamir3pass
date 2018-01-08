@@ -154,3 +154,31 @@ In the end, they all have a bunk, and did not have to trust any one person's ran
 
 This is one way to implement [shuffling cards using commutative encryption](https://en.wikipedia.org/wiki/Mental_poker#Shuffling_cards_using_commutative_encryption).
 
+#### Anonymous voting
+
+Having discovered a habitable planet, the crew decides to wake more crew members from hibernation.
+They decide to form a democratic society, but would like to cast their votes anonymously.
+
+Dan the statistician proposes a method:
+
+1. While they take time to decide how to vote, each of the 13 citizens generates a cryptographic keypair.
+2. When it is ready, they generate a random token that they'll be able to recognize, and encrypt it and their vote together using they encryption key.
+3. Once their vote is encrypted, they are able to add it to a public list of votes.
+4. Once everybody has published their vote, every citizen encrypts every key other than their own until all votes are encrypted with all keys.
+5. Every citizen now generates a second key which they will use to anonymize all the votes.
+6. Each citizen then takes a turn encrypting the entire list, one key at a time, and posting the encrypted version after shuffling the list.
+7. Once everyone has contributed to the anonymization of the list, citizens take turns decrypting the entire list with both of their keys.
+
+Once the list has been fully decrypted, it should not be possible to determine whose vote is whose without the entire group colluding.
+Additionally, since every citizen generated a secret token when they voted, they should be able to check that their vote was counted in the final list.
+If nobody objects, the vote is considered fair and binding.
+
+In the event that any of the votes fail to decrypt, it is possible for citizens to step back through the process to determine who sabotaged the process, though this is at the cost of some privacy.
+This being the case, it seems the most basic attack vector is a denial-of-service: since everyone has a role in the process, anyone can obstruct it.
+
+There are also some obvious scaling issues: each user must generate two keys, and encrypt and decrypt twice the number of votes.
+In practice, optimizations can be made if anyone is willing to make their vote public, or if they decide that they trust someone else to shuffle fairly.
+
+Summarizing: this method works well for small groups where everyone can be present for voting at one time.
+The interactivity of the protocol and its scaling issues make it unsuitable for votes by large populaces.
+
