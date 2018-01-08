@@ -10,8 +10,16 @@ L.generateKeyFromPrime = function (bits, prime, cb) {
     var n;
     var primeMinusOne = prime.subtract(bigint.ONE);
     var gcd;
+
+    var errors = 0;
     var again = function () {
         randomPrime(bits, function (e, p) {
+            if (e) {
+                console.error(e);
+                errors++;
+                if (errors > 3) { return cb(e); }
+                return again();
+            }
             n = p;
             gcd = primeMinusOne.gcd(n);
             if (gcd.equals(bigint.ZERO)) { return void again(); }
@@ -22,7 +30,7 @@ L.generateKeyFromPrime = function (bits, prime, cb) {
             });
         });
     };
-    again();
+    setTimeout(again);
 };
 
 L.encrypt = function (m, key) {
