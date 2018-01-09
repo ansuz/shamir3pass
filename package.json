@@ -1,6 +1,6 @@
 {
   "name": "shamir3pass",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "shamir3pass",
   "main": "index.js",
   "repository": {

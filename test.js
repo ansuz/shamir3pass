@@ -7,15 +7,59 @@ var lib = require(".");
 var ansuz = require("ansuz");
 var assert = require("assert");
 var util = require("tweetnacl-util");
+var nacl = require("tweetnacl");
 
 var keys = [];
-var prime;
-
 var N_BITS = 1024;
+
+var bytes = nacl.randomBytes;
+var prime = lib.prime.sync(bytes, N_BITS);
+
+(function () {
+    var key = lib.genkeys.sync(bytes, N_BITS, prime);
+    var s_plain = '.hello? dog?';
+    console.log(s_plain);
+
+    var u_plain = util.decodeUTF8(s_plain);
+
+    // decrypt twice
+    var u_cypher = lib.decrypt(lib.decrypt(u_plain, key), key);
+
+    // encrypt twice
+    var u_recovered = lib.encrypt(lib.encrypt(u_cypher, key), key);
+
+    assert(s_plain === util.encodeUTF8(u_recovered));
+    console.log(util.encodeUTF8(u_recovered));
+}());
+
+(function () {
+    var key = lib.genkeys.sync(bytes, N_BITS, prime);
+    var s_plain = '.yes hello this is dog';
+    console.log(s_plain);
+
+    var u_plain = util.decodeUTF8(s_plain);
+
+    // encrypt twice
+    var u_cypher = lib.encrypt(lib.encrypt(u_plain, key), key);
+
+    // decrypt twice
+    var u_recovered = lib.decrypt(lib.decrypt(u_cypher, key), key);
+
+    assert(s_plain === util.encodeUTF8(u_recovered));
+    console.log(util.encodeUTF8(u_recovered));
+}());
+
 var makeKey = function (cb) {
     console.log('=== key #%s ===\n', keys.length + 1);
     var stop = timer();
-    lib.generateKeyFromPrime(N_BITS, prime, function (e, key) {
+
+    if (ansuz.die(2)) {
+        keys.push(lib.genkeys.sync(bytes, N_BITS, prime));
+        console.log("key generated in: %sms", stop());
+        return cb();
+    }
+
+    lib.genkeys(bytes, N_BITS, prime, function (e, key) {
         if (e) { return void cb(e); }
         console.log("key generated in: %sms", stop());
         keys.push(key);
@@ -27,7 +71,6 @@ var words = [ 'eep', 'blap', 'dorp', 'beep', 'boop', 'blomp' ];
 var chooseRandomWord = function () {
     return ' ' + ansuz.choose(words);
 };
-
 var checkForDuplicates = function () {
     var serialized = keys.map(function (k) {
         return k.Decryption.toString();
@@ -50,7 +93,7 @@ var test = function (cb) {
         return;
     }
 
-    var plaintext = lib.UTF8ToBigInt(text);
+    var plaintext = util.decodeUTF8(text);
 
     makeKey(function (e) {
         if (e) { return console.error(e); }
@@ -61,23 +104,20 @@ var test = function (cb) {
         // encrypt in order...
         var cypher = keys.reduce(encryptReduce, plaintext);
 
-        console.log('encrypted value: [%s]\n', lib.bigIntToBase64(cypher));
+        console.log('encrypted value: [%s]\n', util.encodeBase64(cypher));
         var shuffled = ansuz.shuffle(keys.slice());
 
         // decrypt in any order
         var plain = shuffled.reduce(decryptReduce, cypher);
 
-        var strung = lib.bigIntToUTF8(plain);
+        var strung = util.encodeUTF8(plain);
         assert(strung === text);
-        console.log('decrypted value: [%s]\n', lib.bigIntToUTF8(plain));
+        console.log('decrypted value: [%s]\n', strung);
         text += chooseRandomWord();
         cb(cb);
     });
 };
 
-lib.randomPrime(N_BITS, function (e, p) {
-    if (e) { return void console.error(e); }
-    prime = p;
-    test(test);
-});
+
+test(test);
 

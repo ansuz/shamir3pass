@@ -20,59 +20,72 @@ Encrypt a plaintext in with as many keys as you like, and decrypt the resulting 
 
 ## Caveats
 
-* you cannot encrypt the empty string
+* when converted to a big integer, messages must have a value of at least 2
+* messages are not authenticated
 * messages must not be larger than the size of the shared prime
-* messages are not authenticated at all
-* key generation is very slow
-* cyphertexts are encoded as jsbn big integers, rather than the usual Uint8Arrays
-  * methods are provided for converting to a variety of formats
 
 ## Usage
 
 ### Generating keys
 
+#### async
+
+Recommended non-blocking random prime generator.
+
 ```javascript
 var s = require("shamir3pass");
 
+// use nacl's randomBytes as a source of entropy
+var nacl = require("tweetnacl");
+
 // generate a random 1024-bit prime
-s.randomPrime(1024, function (e, prime) {
+s.prime(nacl.randomBytes, 1024, function (e, prime) {
     if (e) { return console.error(e); }
 
     // primes are big integers (implemented by jsbn.BigInteger
 
     // generate a 1024-bit encryption key using this prime
-    s.generateKeyFromPrime(1024, prime, function (e, key) {
+    s.genkeys(nacl.randomBytes, 1024, prime, function (e, key) {
         if (e) { return console.error(e); }
-
         /* do something with your encryption key */
     });
 });
 ```
 
+#### synchronous
+
+Executed in the browser, this is likely to grind the CPU and halt the page.
+
+```
+var P = s.prime.sync(nacl.randomBytes, 1024);
+var key = s.genkeys.sync(nacl.randomBytes, 1024, P);
+```
+
 ### Encryption and decryption with a single key
 
 ```javascript
+var util = require("tweetnacl-util");
+
 // assuming you have generated a key
 
-// all encryption is done using big integers
-// we can't process strings directly
+// this is a binary block cypher.
 var utf8_string = 'pewpewpew';
 
-// convert your string to a big integer
-var plaintext = s.UTF8ToBigInt(utf8_string);
+// convert your string to a Uint8Array
+var plaintext = util.decodeUTF8(utf8_string);
 
 // encrypt your plaintext
 var cyphertext = s.encrypt(plaintext, key);
 
 // display your encrypted content
-console.log(s.bigIntToBase64(cyphertext));
+console.log(util.encodeBase64(cyphertext));
 
 // decrypt your cyphertext
 var decrypted = s.decrypt(cyphertext, key);
 
-// your decrypted content is still a big integer
+// your decrypted content is still a Uint8Array
 // convert it back to a string
-var utf8_decrypted = s.bigIntToUTF8(decrypted);
+var utf8_decrypted = util.encodeUTF8(decrypted);
 
 if (utf8_decrypted === utf8_string) {
     console.log("decrypted successfully!");
@@ -84,7 +97,7 @@ if (utf8_decrypted === utf8_string) {
 ```javascript
 // assume we have two keys (aliceKey and bobKey) generated with the same prime
 
-var plaintext = s.UTF8ToBigInt('bork bork bork');
+var plaintext = util.decodeUTF8('bork bork bork');
 
 // alice encryps the plaintext
 var aliceCyphertext = s.encrypt(plaintext, aliceKey);
@@ -102,7 +115,7 @@ var aliceDecrypted = s.decrypt(bobCyphertext, aliceKey);
 var bobDecrypted = s.decrypt(aliceDecrypted, bobKey);
 
 // print the decrypted value ('bork bork bork')
-console.log(s.bigIntToUTF8(bobDecrypted));
+console.log(s.encodeUTF8(bobDecrypted));
 ```
 
 ## Cryptographic properties
@@ -115,14 +128,15 @@ console.log(s.bigIntToUTF8(bobDecrypted));
 
 ### Use cases
 
+Unlike other multi-party crypto-systems like _Shamir's secret sharing_, data can be encrypted in multiple stages.
+
 This cypher is not limited to commutative encryption with only two keys.
-In theory, it should scale to a very large number of keys, but it has only been tested with as many as 25 keys.
+In theory, it should scale to a very large number of keys, but it has only been tested with as many as 25.
 
 Some multi-party applications are listed below.
 
 #### Locking a shared resource
 
-Unlike other multi-party crypto-systems like _Shamir's secret sharing_, data can be encrypted in multiple stages.
 
 Alice is a physicist on an interplanetary expedition, along with Bob, Carol, and Dan.
 Unfortunately, there is evidence that one of the expedition members has gone mad from their extended isolation in space.
@@ -181,4 +195,5 @@ In practice, optimizations can be made if anyone is willing to make their vote p
 
 Summarizing: this method works well for small groups where everyone can be present for voting at one time.
 The interactivity of the protocol and its scaling issues make it unsuitable for votes by large populaces.
+
 
