@@ -1,7 +1,6 @@
-var jsbn = require("jsbn");
-var bigint = jsbn.BigInteger;
-var util = require("tweetnacl-util");
-var prime = require("./prime");
+var bigint = require("jsbn").BigInteger;
+var prime = require("cryptomancy-prime");
+var format = require("cryptomancy-format");
 
 var L = module.exports;
 
@@ -58,49 +57,22 @@ var keyFromPrime = function (f, Prime) {
 L.genkeys = keyFromPrime(function (f) { setTimeout(f); }, L.prime);
 L.genkeys.sync = keyFromPrime(function (f) { return f(); }, L.prime.sync);
 
-var uint8ArrayToBigInt = L.uint8ArrayToBigInt = function (u8) {
-    var num = bigint.ZERO;
-    var l = u8.length;
-    for (var i = 0;i < l; i++) {
-        num = num.shiftLeft(8).add(new bigint(Number(u8[i]).toString()));
-    }
-    return num;
-};
-
-var bigIntToUint8Array = L.bigIntToUint8Array = function (num) {
-    return new Uint8Array(num.toByteArray());
-};
-
 L.encrypt = function (u8_m, key) {
     if (!u8_m || !u8_m.length) { throw new Error('invalid plaintext'); }
-    var m = uint8ArrayToBigInt(u8_m);
+    var m = format.encodeBigInt(u8_m);
+    if (m.compareTo(bigint.ONE) < 1) { throw new Error('invalid plaintext'); }
 
     var cypher = m
     .modPow(key.Encryption, key.Prime);
-    return bigIntToUint8Array(cypher);
+    return format.decodeBigInt(cypher);
 };
 
 L.decrypt = function (u8_c, key) {
     if (!u8_c || !u8_c.length) { throw new Error('invalid cyphertext'); }
-    var c = uint8ArrayToBigInt(u8_c);
+    var c = format.encodeBigInt(u8_c);
+    if (c.compareTo(bigint.ONE) < 1) { throw new Error('invalid cyphertext'); }
     var plain = c
     .modPow(key.Decryption, key.Prime);
-    return bigIntToUint8Array(plain);
-};
-
-L.bigIntToBase64 = function (num) {
-    return util.encodeBase64(bigIntToUint8Array(num));
-};
-
-L.base64ToBigInt = function (b64) {
-    return uint8ArrayToBigInt(util.decodeBase64(b64));
-};
-
-L.UTF8ToBigInt = function (s) {
-    return uint8ArrayToBigInt(util.decodeUTF8(s));
-};
-
-L.bigIntToUTF8 = function (num) {
-    return util.encodeUTF8(bigIntToUint8Array(num));
+    return format.decodeBigInt(plain);
 };
 

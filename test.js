@@ -18,7 +18,6 @@ var prime = lib.prime.sync(bytes, N_BITS);
 (function () {
     var key = lib.genkeys.sync(bytes, N_BITS, prime);
     var s_plain = '.hello? dog?';
-    console.log(s_plain);
 
     var u_plain = util.decodeUTF8(s_plain);
 
@@ -35,7 +34,6 @@ var prime = lib.prime.sync(bytes, N_BITS);
 (function () {
     var key = lib.genkeys.sync(bytes, N_BITS, prime);
     var s_plain = '.yes hello this is dog';
-    console.log(s_plain);
 
     var u_plain = util.decodeUTF8(s_plain);
 
@@ -47,6 +45,62 @@ var prime = lib.prime.sync(bytes, N_BITS);
 
     assert(s_plain === util.encodeUTF8(u_recovered));
     console.log(util.encodeUTF8(u_recovered));
+}());
+
+
+(function () {
+    var names = "abc".split("");
+    var keys = {};
+    names.forEach(function (n) {
+        keys[n] = lib.genkeys.sync(bytes, N_BITS, prime);
+    });
+
+
+    var token = 'xxx';
+    var plain = util.decodeUTF8(token);
+
+    // chuck encrypts
+    var c = lib.encrypt(plain, keys.c);
+
+    // bob encrypts chuck's cyphertext
+    var bc = lib.encrypt(c, keys.b);
+
+    // alice encrypts chuck's cyphertext
+    var ac = lib.encrypt(c, keys.a);
+
+    // bob encrypts alice and chuck's cyphertext
+    var bac = lib.encrypt(ac, keys.b);
+
+    // alice encrypts bob and chuck's cyphertext
+    var abc = lib.encrypt(bc, keys.a);
+
+    // chuck decrypts both triply encryped cyphertexts
+    var to64 = util.encodeBase64;
+
+    var ab = lib.decrypt(abc, keys.c);
+    var ba = lib.decrypt(bac, keys.c);
+    assert(to64(ab) === to64(ba));
+
+    var a1 = lib.decrypt(ab, keys.b);
+    var a2 = lib.decrypt(ba, keys.b);
+    assert(to64(a1) === to64(a2));
+
+    var b1 = lib.decrypt(ab, keys.a);
+    var b2 = lib.decrypt(ba, keys.a);
+    assert(to64(b1) === to64(b2));
+
+    var _a = lib.decrypt(a1, keys.a);
+    [
+        lib.decrypt(a1, keys.a),
+        lib.decrypt(a2, keys.a),
+        lib.decrypt(b1, keys.b),
+        lib.decrypt(b2, keys.b),
+        lib.decrypt(c, keys.c),
+    ].forEach(function (plain) {
+        assert(util.encodeUTF8(plain) === token);
+    });
+
+    console.log("successfully commutated keys\n");
 }());
 
 var makeKey = function (cb) {
