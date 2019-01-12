@@ -1,6 +1,6 @@
 {
   "name": "shamir3pass",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "shamir3pass",
   "main": "index.js",
   "repository": {
@@ -17,6 +17,8 @@
     "ansuz": "0.0.18"
   },
   "dependencies": {
+    "cryptomancy-format": "^1.0.1",
+    "cryptomancy-prime": "^1.0.1",
     "jsbn": "^1.1.0",
     "tweetnacl": "^1.0.0",
     "tweetnacl-util": "^0.15.0"
