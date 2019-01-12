@@ -26,11 +26,10 @@ var keyFromPrime = function (f, Prime) {
                 gcd = primeMinusOne.gcd(n);
                 if (gcd.equals(bigint.ZERO)) { return void again(); }
 
-                // TODO return Encryption, Decryption, and Prime as Uint8Arrays
                 var k = {
-                    Encryption: n,
-                    Decryption: n.modInverse(primeMinusOne),
-                    Prime: prime,
+                    Encryption: format.decodeBigInt(n),
+                    Decryption: format.decodeBigInt(n.modInverse(primeMinusOne)),
+                    Prime: format.decodeBigInt(prime),
                 };
 
                 // your keys must be greater than log2(prime)
@@ -63,7 +62,7 @@ L.encrypt = function (u8_m, key) {
     if (m.compareTo(bigint.ONE) < 1) { throw new Error('invalid plaintext'); }
 
     var cypher = m
-    .modPow(key.Encryption, key.Prime);
+    .modPow(format.encodeBigInt(key.Encryption), format.encodeBigInt(key.Prime));
     return format.decodeBigInt(cypher);
 };
 
@@ -72,7 +71,7 @@ L.decrypt = function (u8_c, key) {
     var c = format.encodeBigInt(u8_c);
     if (c.compareTo(bigint.ONE) < 1) { throw new Error('invalid cyphertext'); }
     var plain = c
-    .modPow(key.Decryption, key.Prime);
+    .modPow(format.encodeBigInt(key.Decryption), format.encodeBigInt(key.Prime));
     return format.decodeBigInt(plain);
 };
 
